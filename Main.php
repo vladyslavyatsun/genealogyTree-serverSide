@@ -4,6 +4,7 @@ use Phalcon\Loader;
 use Phalcon\Mvc\Micro;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\Db\Adapter\Pdo\Mysql as PdoMysql;
+require_once('Api.php');
 
 // Используем Loader() для автозагрузки нашей модели
 $loader = new Loader();
@@ -33,8 +34,8 @@ $di->set('db', function () {
 $app = new Micro($di);
 
 // Получение всех роботов
-$app->get('/api', function () {
-
+$app->get('/api', function () use ($app) {
+    getTrees($app);
 });
 
 
