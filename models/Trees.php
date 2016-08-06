@@ -7,16 +7,16 @@
  */
 
 use Phalcon\Mvc\Model;
-class Tree extends Model
+class Trees extends Model
 {
     private $id;
     private $title;
-    private $autor;
+    private $author;
 
 
     public function initialize()
     {
-        $this->hasMany("id", "Person", "tree_id");
+        $this->hasMany("id", "Persons", "tree_id");
     }
 
 
@@ -55,17 +55,23 @@ class Tree extends Model
     /**
      * @return mixed
      */
-    public function getAutor()
+    public function getAuthor()
     {
-        return $this->autor;
+        return $this->author;
     }
 
     /**
-     * @param mixed $autor
+     * @param mixed $author
      */
-    public function setAutor($autor)
+    public function setAuthor($author)
     {
-        $this->autor = $autor;
+        $this->author = $author;
     }
+
+    function __toString()
+    {
+        return "id = ".$this->id."title = ".$this->title." author = ".$this->author;
+    }
+
 
 }

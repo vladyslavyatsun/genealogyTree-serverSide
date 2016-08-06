@@ -6,7 +6,7 @@
  * Time: 5:04 PM
  */
 use Phalcon\Mvc\Model;
-class Person extends Model
+class Persons extends Model
 {
     private $id;
     private $tree_id;
@@ -20,7 +20,7 @@ class Person extends Model
 
     public function initialize()
     {
-        $this->belongsTo("tree_id", "Tree", "id");
+        $this->belongsTo("tree_id", "Trees", "id");
     }
 
     /**
