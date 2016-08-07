@@ -16,6 +16,7 @@ $loader->registerDirs(
     )
 )->register();
 
+
 $di = new FactoryDefault();
 
 $di->set('db', function () {
@@ -30,10 +31,8 @@ $di->set('db', function () {
 });
 
 
-// Создаем и привязываем DI к приложению
     $app = new Micro($di);
 
-// Получение всех роботов
     $app->get('/api/trees', function () use ($app) {
         getTrees($app);
     });
@@ -46,28 +45,36 @@ $di->set('db', function () {
         updateTree($app, $id);
     });
 
-    $app->delete('/api/trees/{id:[0-9]+}', function ($id) use ($app) {
-        deleteTree($app, $id);
+    $app->delete('/api/trees/{id:[0-9]+}', function ($id){
+        deleteTree($id);
     });
+
+
+
+    $app->get('/api/persons/tree/{id:[0-9]+}', function ($id) {
+        getPersonInTree($id);
+    });
+
+    $app->get('/api/person/{id:[0-9]+}', function ($id) {
+        getPerson($id);
+    });
+
+    $app->post('/api/person', function () use ($app) {
+        addPerson($app);
+    });
+
+    $app->put('/api/person/{id:[0-9]+}', function ($id) use ($app) {
+        updatePerson($app, $id);
+    });
+
+    $app->delete('/api/person/{id:[0-9]+}', function ($id){
+        deletePerson($id);
+    });
+
 
     $app->notFound(function () use ($app) {
         $app->response->setStatusCode(404, "Not Found")->sendHeaders();
     });
-
-
-
-    $app->get('/api/persons/{id:[0-9]+}', function ($id) use ($app) {
-        getPersons($app, $id);
-    });
-
-    $app->post('/api/trees', function () use ($app) {
-        addTree($app);
-    });
-
-    $app->put('/api/trees/{id:[0-9]+}', function ($id) use ($app) {
-        updateTree($app, $id);
-    });
-
 
 } catch (Exception $e) {
     openlog("myLog ------ ", LOG_PID | LOG_PERROR, LOG_LOCAL0);

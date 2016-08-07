@@ -1,15 +1,14 @@
 <?php
 use Phalcon\Http\Response;
-
 function getTrees ($app) {
     $response = new Response();
 
     try {
-        $query = "SELECT count(*) FROM trees";
-        $trees = $app->modelsManager->executeQuery($query);
 
+        $query = "SELECT Trees.id, Trees.title, Trees.author, count(Persons.id) AS countOfPerson FROM Trees LEFT JOIN Persons ON Trees.id = Persons.tree_id GROUP BY Trees.id";
+        $treesWithCountOfPerson = $app->modelsManager->executeQuery($query);
 
-        if ($trees == false) {
+        if ($treesWithCountOfPerson == false) {
             $response->setJsonContent(
                 array(
                     'status' => 'NOT-FOUND'
@@ -17,11 +16,13 @@ function getTrees ($app) {
             );
         } else {
             $data = array();
-            foreach ($trees as $tree) {
+            foreach ($treesWithCountOfPerson as $row) {
+
                 $data[] = array(
-                    'id' => (string)$tree->_id,
-                    'title' => $tree->title,
-                    'author' => $tree->author,
+                    'id' => (string)$row->id,
+                    'title' => $row->title,
+                    'author' => $row->author,
+                    'countOfPerson'=> $row->countOfPerson
                 );
             }
             $response->setStatusCode(201, "OK");
@@ -42,125 +43,308 @@ function getTrees ($app) {
 
 function addTree($app)
 {
+    $tree = $app->request->getJsonRawBody();
+
+    $treeInDB = new Trees();
     $response = new Response();
-        $tree = $app->request->getJsonRawBody();
-    openlog("myLog ------ ", LOG_PID | LOG_PERROR, LOG_LOCAL0);
-    syslog(LOG_ERR, var_export($tree,true));
-    closelog();
-        $phql = "INSERT INTO trees (title, author) VALUES (:title:, :author:)";
 
-
-        $status = $app->modelsManager->executeQuery($phql, array(
-            'title' => $tree->title,
-            'author' => $tree->author
-        ));
-
-        if ($status->success() == true) {
-
-            // Меняем HTTP статус
-            $response->setStatusCode(201, "Created");
-
-            $tree->id = $status->getModel()->id;
+    try {
+            $treeInDB->setTitle($tree->title);
+            $treeInDB->setAuthor($tree->author);
+            $treeInDB->create();
 
             $response->setJsonContent(
                 array(
-                    'id' => $tree->id,
-                    'title' => $tree->title,
-                    'author' => $tree->author
+                    'id' => $treeInDB->getId(),
+                    'title' => $treeInDB->getTitle(),
+                    'author' => $treeInDB->getAuthor()
                 )
             );
-
-        } else {
-            $response->setStatusCode(409, "Conflict");
-            $errors = array();
-            foreach ($status->getMessages() as $message) {
-                $errors[] = $message->getMessage();
-            }
-
-            $response->setJsonContent(
-                array(
-                    'status' => 'ERROR',
-                    'messages' => $errors
-                )
-            );
-        }
+            $response->setStatusCode(201, "OK");
+            $response->setContentType('application/json', 'UTF-8');
+    }
+    catch (Exception $e){
+        $response->setStatusCode(409, "Conflict");
+        $response->setJsonContent(
+            array(
+                'status'   => 'ERROR',
+                'messages' => $e->getMessage()
+            )
+        );
+    }
     return $response->send();
 }
 
 function updateTree($app, $id)
 {
     $tree = $app->request->getJsonRawBody();
-    openlog("myLog ------ ", LOG_PID | LOG_PERROR, LOG_LOCAL0);
-    syslog(LOG_ERR, var_export($tree,true)."    ".$id);
-    closelog();
-    $phql = "UPDATE trees SET title = :title:, author = :author: WHERE id = :id:";
 
-    $status = $app->modelsManager->executeQuery($phql, array(
-        'id' => $id,
-        'title' => $tree->title,
-        'author' => $tree->author
-    ));
+    $treeInDB = Trees::findFirst($id);
     $response = new Response();
 
-    if ($status->success() == true) {
-        $response->setJsonContent(
-            array(
-                'id' => $id,
-                'title' => $tree->title,
-                'author' => $tree->author
-            )
-        );
-    } else {
+    try {
+        if ($treeInDB) {
+            $treeInDB->setTitle($tree->title);
+            $treeInDB->setAuthor($tree->author);
+            $treeInDB->save();
 
-        $response->setStatusCode(409, "Conflict");
-
-        $errors = array();
-        foreach ($status->getMessages() as $message) {
-            $errors[] = $message->getMessage();
+            $response->setJsonContent(
+                array(
+                    'id' => $treeInDB->getId(),
+                    'title' => $treeInDB->getTitle(),
+                    'author' => $treeInDB->getAuthor()
+                )
+            );
+            $response->setStatusCode(201, "OK");
+            $response->setContentType('application/json', 'UTF-8');
+        }
+        else
+        {
+            throw new Exception("no element with id = ".$id);
         }
 
+    }
+    catch (Exception $e){
+        $response->setStatusCode(409, "Conflict");
         $response->setJsonContent(
             array(
                 'status'   => 'ERROR',
-                'messages' => $errors
+                'messages' => $e->getMessage()
             )
         );
     }
-    return $response;
+    return $response->send();
 }
 
-function deleteTree($app, $id)
+function deleteTree($id)
+{
+    $treeInDB = Trees::findFirst($id);
+    $response = new Response();
+
+    try {
+        if ($treeInDB) {
+            $treeInDB->delete();
+            $response->setStatusCode(204, "Deleted");
+        }
+        else
+        {
+            throw new Exception("no element with id = ".$id);
+        }
+
+    }
+    catch (Exception $e){
+        $response->setStatusCode(409, "Conflict");
+        $response->setJsonContent(
+            array(
+                'status'   => 'ERROR',
+                'messages' => $e->getMessage()
+            )
+        );
+    }
+    return $response->send();
+}
+
+
+function getPerson($id){
+    $personInDB = Persons::findFirst($id);
+    $response = new Response();
+
+    try {
+        if ($personInDB) {
+            $response->setJsonContent(
+                array(
+                    'id' => $personInDB->getId(),
+                    'firstName' => $personInDB->getFirstName(),
+                    'lastName' => $personInDB->getLastName(),
+                    'middleName' => $personInDB->getMiddleName(),
+                    'gender' => $personInDB->getGender(),
+                    'motherId' => $personInDB->getMotherId(),
+                    'fatherId' => $personInDB->getFatherId(),
+                    'treeId' => $personInDB->getTreeId()
+                )
+            );
+            $response->setStatusCode(201, "OK");
+            $response->setContentType('application/json', 'UTF-8');
+        }
+        else
+        {
+            throw new Exception("no element with id = ".$id);
+        }
+
+    }
+    catch (Exception $e){
+        $response->setStatusCode(409, "Conflict");
+        $response->setJsonContent(
+            array(
+                'status'   => 'ERROR',
+                'messages' => $e->getMessage()
+            )
+        );
+    }
+    return $response->send();
+}
+
+function addPerson($app){
+    $person = $app->request->getJsonRawBody();
+    $response = new Response();
+    $personInDB = new Persons();
+
+    try {
+            $personInDB->setFirstName($person->firstName);
+            $personInDB->setLastName($person->lastName);
+            $personInDB->setMiddleName($person->middleName);
+            $personInDB->setLastName($person->lastName);
+            $personInDB->setGender($person->gender);
+            $personInDB->setMotherId($person->motherId);
+            $personInDB->setFatherId($person->fatherId);
+            $personInDB->setTreeId($person->treeId);
+
+            $personInDB->create();
+
+            $response->setJsonContent(
+                array(
+                    'id' => $personInDB->getId(),
+                    'firstName' => $personInDB->getFirstName(),
+                    'lastName' => $personInDB->getLastName(),
+                    'middleName' => $personInDB->getMiddleName(),
+                    'gender' => $personInDB ->getGender(),
+                    'motherId' => $personInDB->getMotherId(),
+                    'fatherId' => $personInDB->getFatherId(),
+                    'treeId' => $personInDB->getTreeId()
+                )
+            );
+            $response->setStatusCode(201, "OK");
+            $response->setContentType('application/json', 'UTF-8');
+
+    }
+    catch (Exception $e){
+        $response->setStatusCode(409, "Conflict");
+        $response->setJsonContent(
+            array(
+                'status'   => 'ERROR',
+                'messages' => $e->getMessage()
+            )
+        );
+    }
+    return $response->send();
+}
+
+function updatePerson($app, $id)
+{
+    $person = $app->request->getJsonRawBody();
+
+    $personInDB = Persons::findFirst($id);
+    $response = new Response();
+
+    try {
+        if ($personInDB) {
+            $personInDB->setFirstName($person->firstName);
+            $personInDB->setLastName($person->lastName);
+            $personInDB->setMiddleName($person->middleName);
+            $personInDB->setLastName($person->lastName);
+            $personInDB->setGender($person->gender);
+            $personInDB->setMotherId($person->motherId);
+            $personInDB->setFatherId($person->fatherId);
+            $personInDB->setTreeId($person->treeId);
+
+            $personInDB->save();
+
+            $response->setJsonContent(
+                array(
+                    'id' => $personInDB->getId(),
+                    'firstName' => $personInDB->getFirstName(),
+                    'lastName' => $personInDB->getLastName(),
+                    'middleName' => $personInDB->getMiddleName(),
+                    'gender' => $personInDB ->getGender(),
+                    'motherId' => $personInDB->getMotherId(),
+                    'fatherId' => $personInDB->getFatherId(),
+                    'treeId' => $personInDB->getTreeId()
+                )
+            );
+            $response->setStatusCode(201, "OK");
+            $response->setContentType('application/json', 'UTF-8');
+        }
+        else
+        {
+            throw new Exception("no element with id = ".$id);
+        }
+
+    }
+    catch (Exception $e){
+        $response->setStatusCode(409, "Conflict");
+        $response->setJsonContent(
+            array(
+                'status'   => 'ERROR',
+                'messages' => $e->getMessage()
+            )
+        );
+    }
+    return $response->send();
+
+}
+
+
+function deletePerson($id)
+{
+    $personInDB = Persons::findFirst($id);
+    $response = new Response();
+
+    try {
+        if ($personInDB) {
+            $personInDB->delete();
+            $response->setStatusCode(204, "Deleted");
+        }
+        else
+        {
+            throw new Exception("no element with id = ".$id);
+        }
+
+    }
+    catch (Exception $e){
+        $response->setStatusCode(409, "Conflict");
+        $response->setJsonContent(
+            array(
+                'status'   => 'ERROR',
+                'messages' => $e->getMessage()
+            )
+        );
+    }
+    return $response->send();
+}
+
+
+function getPersonInTree($id)
 {
 
-    $phql = "DELETE FROM trees WHERE id = :id:";
-    $status = $app->modelsManager->executeQuery($phql, array(
-        'id' => $id
-    ));
+        $response = new Response();
+        try {
+            $tree = Trees::findFirst($id);
+            $persons = Persons::find("tree_id = '" . $tree->id . "'");
 
-    $response = new Response();
-
-    if ($status->success() == true) {
-        $response->setJsonContent(
-            array(
-                'status' => 'OK'
-            )
-        );
-    } else {
-
-        $response->setStatusCode(409, "Conflict");
-
-        $errors = array();
-        foreach ($status->getMessages() as $message) {
-            $errors[] = $message->getMessage();
+            $data = array();
+            foreach ($persons as $row) {
+                $data[] = array(
+                    'id' => $row->getId(),
+                    'firstName' => $row->getFirstName(),
+                    'lastName' => $row->getLastName(),
+                    'middleName' => $row->getMiddleName(),
+                    'gender' => $row->getGender(),
+                    'motherId' => $row->getMotherId(),
+                    'fatherId' => $row->getFatherId(),
+                    'treeId' => $row->getTreeId()
+                );
+            }
+            $response->setStatusCode(201, "OK");
+            $response->setContentType('application/json', 'UTF-8');
+            $response->setJsonContent($data);
+        } catch (Exception $e) {
+            $response->setStatusCode(409, "Conflict");
+            $response->setJsonContent(
+                array(
+                    'status' => 'ERROR',
+                    'messages' => $e->getMessage()
+                )
+            );
         }
-
-        $response->setJsonContent(
-            array(
-                'status'   => 'ERROR',
-                'messages' => $errors
-            )
-        );
-    }
-    return $response;
+        return $response->send();
 }
-
