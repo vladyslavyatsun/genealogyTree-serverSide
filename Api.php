@@ -4,7 +4,6 @@ function getTrees ($app) {
     $response = new Response();
 
     try {
-
         $query = "SELECT Trees.id, Trees.title, Trees.author, count(Persons.id) AS countOfPerson FROM Trees LEFT JOIN Persons ON Trees.id = Persons.tree_id GROUP BY Trees.id";
         $treesWithCountOfPerson = $app->modelsManager->executeQuery($query);
 
@@ -158,9 +157,9 @@ function getPerson($id){
                     'lastName' => $personInDB->getLastName(),
                     'middleName' => $personInDB->getMiddleName(),
                     'gender' => $personInDB->getGender(),
-                    'motherId' => $personInDB->getMotherId(),
-                    'fatherId' => $personInDB->getFatherId(),
-                    'treeId' => $personInDB->getTreeId()
+                    'mother_id' => $personInDB->getMotherId(),
+                    'father_id' => $personInDB->getFatherId(),
+                    'tree_id' => $personInDB->getTreeId()
                 )
             );
             $response->setStatusCode(201, "OK");
@@ -186,6 +185,7 @@ function getPerson($id){
 
 function addPerson($app){
     $person = $app->request->getJsonRawBody();
+
     $response = new Response();
     $personInDB = new Persons();
 
@@ -195,9 +195,9 @@ function addPerson($app){
             $personInDB->setMiddleName($person->middleName);
             $personInDB->setLastName($person->lastName);
             $personInDB->setGender($person->gender);
-            $personInDB->setMotherId($person->motherId);
-            $personInDB->setFatherId($person->fatherId);
-            $personInDB->setTreeId($person->treeId);
+            $personInDB->setMotherId($person->mother_id);
+            $personInDB->setFatherId($person->father_id);
+            $personInDB->setTreeId($person->tree_id);
 
             $personInDB->create();
 
@@ -208,9 +208,9 @@ function addPerson($app){
                     'lastName' => $personInDB->getLastName(),
                     'middleName' => $personInDB->getMiddleName(),
                     'gender' => $personInDB ->getGender(),
-                    'motherId' => $personInDB->getMotherId(),
-                    'fatherId' => $personInDB->getFatherId(),
-                    'treeId' => $personInDB->getTreeId()
+                    'mother_id' => $personInDB->getMotherId(),
+                    'father_id' => $personInDB->getFatherId(),
+                    'tree_id' => $personInDB->getTreeId()
                 )
             );
             $response->setStatusCode(201, "OK");
@@ -243,9 +243,8 @@ function updatePerson($app, $id)
             $personInDB->setMiddleName($person->middleName);
             $personInDB->setLastName($person->lastName);
             $personInDB->setGender($person->gender);
-            $personInDB->setMotherId($person->motherId);
-            $personInDB->setFatherId($person->fatherId);
-            $personInDB->setTreeId($person->treeId);
+            $personInDB->setMotherId($person->mother_id);
+            $personInDB->setFatherId($person->father_id);
 
             $personInDB->save();
 
@@ -256,9 +255,9 @@ function updatePerson($app, $id)
                     'lastName' => $personInDB->getLastName(),
                     'middleName' => $personInDB->getMiddleName(),
                     'gender' => $personInDB ->getGender(),
-                    'motherId' => $personInDB->getMotherId(),
-                    'fatherId' => $personInDB->getFatherId(),
-                    'treeId' => $personInDB->getTreeId()
+                    'mother_id' => $personInDB->getMotherId(),
+                    'father_id' => $personInDB->getFatherId(),
+                    'tree_id' => $personInDB->getTreeId()
                 )
             );
             $response->setStatusCode(201, "OK");
@@ -329,9 +328,9 @@ function getPersonInTree($id)
                     'lastName' => $row->getLastName(),
                     'middleName' => $row->getMiddleName(),
                     'gender' => $row->getGender(),
-                    'motherId' => $row->getMotherId(),
-                    'fatherId' => $row->getFatherId(),
-                    'treeId' => $row->getTreeId()
+                    'mother_id' => $row->getMotherId(),
+                    'father_id' => $row->getFatherId(),
+                    'tree_id' => $row->getTreeId()
                 );
             }
             $response->setStatusCode(201, "OK");

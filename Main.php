@@ -60,7 +60,7 @@ $di->set('db', function () {
     });
 
     $app->post('/api/person', function () use ($app) {
-        addPerson($app);
+        openlog("myLog ------ ", LOG_PID | LOG_PERROR, LOG_LOCAL0);
     });
 
     $app->put('/api/person/{id:[0-9]+}', function ($id) use ($app) {
