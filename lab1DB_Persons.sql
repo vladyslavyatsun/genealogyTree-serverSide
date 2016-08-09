@@ -1,0 +1,10 @@
+UPDATE lab1DB.Persons SET firstName = 'newPerson12', lastName = 'newPerson12', middleName = 'new Person', mother_id = 0, father_id = 0, tree_id = 1, gender = 0 WHERE id = 2;
+UPDATE lab1DB.Persons SET firstName = 'newPerson1', lastName = 'newPerson1', middleName = 'new Person1', mother_id = 0, father_id = 0, tree_id = 1, gender = 0 WHERE id = 9;
+UPDATE lab1DB.Persons SET firstName = 'newPerson2', lastName = 'newPerson2', middleName = 'new Person2', mother_id = 0, father_id = 0, tree_id = 1, gender = 0 WHERE id = 10;
+UPDATE lab1DB.Persons SET firstName = 'child', lastName = 'child', middleName = 'child', mother_id = 0, father_id = 25, tree_id = 1, gender = 0 WHERE id = 11;
+UPDATE lab1DB.Persons SET firstName = 'newPerson123', lastName = 'newPerson', middleName = 'new Person', mother_id = 0, father_id = 10, tree_id = 1, gender = 0 WHERE id = 12;
+UPDATE lab1DB.Persons SET firstName = 'firstName', lastName = 'lastName', middleName = 'middleName', mother_id = 0, father_id = 0, tree_id = 1, gender = 0 WHERE id = 16;
+UPDATE lab1DB.Persons SET firstName = 'firstName', lastName = 'lastName', middleName = 'middleName', mother_id = 0, father_id = 10, tree_id = 1, gender = 0 WHERE id = 25;
+UPDATE lab1DB.Persons SET firstName = 'newPerson12', lastName = 'newPerson12', middleName = 'new Person', mother_id = 0, father_id = 0, tree_id = 1, gender = 0 WHERE id = 26;
+UPDATE lab1DB.Persons SET firstName = 'firstName', lastName = 'lastName', middleName = 'middleName', mother_id = 0, father_id = 0, tree_id = 22, gender = 0 WHERE id = 27;
+UPDATE lab1DB.Persons SET firstName = 'firstName', lastName = 'lastName', middleName = 'middleNamegi', mother_id = 0, father_id = 0, tree_id = 26, gender = 0 WHERE id = 28;
