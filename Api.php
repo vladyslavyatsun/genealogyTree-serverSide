@@ -189,6 +189,7 @@ function addPerson($app){
     $response = new Response();
     $personInDB = new Persons();
 
+
     try {
             $personInDB->setFirstName($person->firstName);
             $personInDB->setLastName($person->lastName);
@@ -198,6 +199,8 @@ function addPerson($app){
             $personInDB->setMotherId($person->mother_id);
             $personInDB->setFatherId($person->father_id);
             $personInDB->setTreeId($person->tree_id);
+
+
 
             $personInDB->create();
 

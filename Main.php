@@ -60,7 +60,7 @@ $di->set('db', function () {
     });
 
     $app->post('/api/person', function () use ($app) {
-        openlog("myLog ------ ", LOG_PID | LOG_PERROR, LOG_LOCAL0);
+        addPerson($app);
     });
 
     $app->put('/api/person/{id:[0-9]+}', function ($id) use ($app) {
@@ -80,7 +80,6 @@ $di->set('db', function () {
     openlog("myLog ------ ", LOG_PID | LOG_PERROR, LOG_LOCAL0);
     syslog(LOG_ERR, "".$e);
     closelog();
-
 }
 $app->handle();
 
